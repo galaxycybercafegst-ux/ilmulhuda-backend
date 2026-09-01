@@ -108,9 +108,20 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ error: 'Sawal likhna zaroori hai.' });
         }
 
-        const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        // Token ko handle karne ke liye check karein ki yeh Bearer token hai ya standard key
+        const isBearer = apiKey && (apiKey.startsWith('AQ.') || !apiKey.startsWith('AIza'));
+        const url = isBearer 
+            ? 'httpsgenerativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'.replace('https', 'https://')
+            : `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (isBearer) {
+            headers['Authorization'] = `Bearer ${apiKey}`;
+        }
+
+        const apiResponse = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: headers,
             body: JSON.stringify({
                 contents: [{ parts: [{ text: prompt }] }],
                 systemInstruction: { parts: [{ text: ISLAMIC_SYSTEM_PROMPT }] }
@@ -123,7 +134,7 @@ app.post('/api/chat', async (req, res) => {
             res.json({ reply: data.candidates[0].content.parts[0].text });
         } else {
             console.error('Gemini API Error:', data);
-            res.status(500).json({ error: 'AI se jawab nahi mil paya.' });
+            res.status(500).json({ error: data.error?.message || 'AI se jawab nahi mil paya.' });
         }
     } catch (error) {
         console.error('Error:', error);
