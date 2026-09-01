@@ -94,11 +94,21 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ error: 'Sawal likhna zaroori hai.' });
         }
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+        // Check karein ki key Bearer token hai ya standard key
+        const isBearer = apiKey && (apiKey.startsWith('AQ.') || !apiKey.startsWith('AIza'));
+        let url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+        
+        const headers = { 'Content-Type': 'application/json' };
+        
+        if (isBearer) {
+            headers['Authorization'] = `Bearer ${apiKey}`;
+        } else {
+            url += `?key=${apiKey}`;
+        }
 
         const apiResponse = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: headers,
             body: JSON.stringify({
                 contents: [{ parts: [{ text: prompt }] }],
                 systemInstruction: { parts: [{ text: ISLAMIC_SYSTEM_PROMPT }] }
@@ -111,7 +121,7 @@ app.post('/api/chat', async (req, res) => {
             res.json({ reply: data.candidates[0].content.parts[0].text });
         } else {
             console.error('Gemini API Error:', data);
-            const errReason = data.error?.message || 'API Key invalid ya unauthorized hai.';
+            const errReason = data.error?.message || 'API request fail ho gayi.';
             res.status(400).json({ error: errReason });
         }
     } catch (error) {
