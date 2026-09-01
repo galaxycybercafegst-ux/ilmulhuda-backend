@@ -5,36 +5,42 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Advanced Local Islamic Tutor Engine (Har sawal ka alag aur behtareen jawab dene ke liye)
-function getDynamicIslamicReply(question) {
+// Mukammal aur Sateek Islamic Knowledge Engine
+function getAccurateIslamicReply(question) {
     const q = question.toLowerCase();
     
     if (q.includes('salam') || q.includes('hello') || q.includes('hey') || q.includes('hi')) {
-        return "Walaikum Assalam wa Rahmatullahi wa Barakatuh! Main <b>Ilmul Huda</b> ka AI Islamic Tutor hoon. Aaj aap deeni masail, Quran, Tajweed ya kisi bhi Islami mauzu par sawal pooch sakte hain. Boliye, main aapki kya madad karoon?";
+        return "Walaikum Assalam wa Rahmatullahi wa Barakatuh! Main Ilmul Huda ka AI Islamic Tutor hoon. Aap deeni masail, dua, tajweed ya kisi bhi mauzu par sawal pooch sakte hain.";
     } 
-    else if (q.includes('kya kar rahe ho') || q.includes('kya hal hai') || q.includes('kaise ho')) {
-        return "Alhamdulillah main bilkul theek hoon! Aapko deeni taleem aur sawalon ke jawab dene ke liye hazir hoon. Aapko kis masle ya mauzu par maloomat chahiye?";
+    else if (q.includes('khana khane ki dua') || q.includes('khane ki dua')) {
+        return "<b>Khana Khane ki Dua:</b><br>بِسْمِ اللَّهِ وَعَلَى بَرَكَةِ اللَّهِ<br><i>Tarjuma:</i> Allah ke naam ke sath aur Allah ki barkat par (hum khana shuru karte hain).<br><br><b>Agar khana shuru karte waqt dua bhool jayein toh yeh padhein:</b><br>بِسْمِ اللَّهِ أَوَّلَهُ وَآخِرَهُ";
     }
-    else if (q.includes('ikhfa') || q.includes('tajweed') || q.includes('noon sakin') || q.includes('tanween')) {
-        return "<b>Tajweed - Ikhfa ke Rules:</b><br>Ikhfa ke lafzi mani chupane ke hain. Jab Noon Sakin (نْ) ya Tanween (ً ٍ ٌ) ke baad Ikhfa ke 15 huroof mein se koi harf aaye, toh Noon Sakin ki awaz ko naak mein chupakar (Ghunnah ke sath) 1 alif ki miqdaar tak kheench kar padha jata hai.<br><br><b>Ikhfa ke 15 huroof:</b> ت, ث, ج, د, ذ, ز, س, ش, ص, ض, ط, ظ, ف, ق, ك.<br><i>Misal:</i> 'Min Syaiin' ya 'Antum'.";
+    else if (q.includes('dua') && (q.includes('khane') || q.includes('khana'))) {
+        return "<b>Khana Khane ki Dua:</b><br>بِسْمِ اللَّهِ وَعَلَى بَرَكَةِ اللَّهِ<br><i>Tarjuma:</i> Allah ke naam ke sath aur Allah ki barkat par.";
+    }
+    else if (q.includes('pani peene ki dua') || q.includes('paani ki dua')) {
+        return "Paani peene ki sunnat yeh hai ki bayen (left) hath se piyein, baith kar piyein aur teen saans mein piyein. Shuru mein <b>'Bismillah'</b> kahein aur aakhir mein <b>'Alhamdulillah'</b> kahein.";
+    }
+    else if (q.includes('ikhfa') || q.includes('tajweed')) {
+        return "<b>Tajweed - Ikhfa ke Rules:</b><br>Jab Noon Sakin (نْ) ya Tanween ke baad Ikhfa ke 15 huroof (ت ث ج د ذ ز س ش ص ض ط ظ ف ق ك) mein se koi harf aaye, toh Noon ki awaz ko naak mein chupakar (Ghunnah ke sath) 1 alif tak kheench kar padhte hain.";
     } 
     else if (q.includes('namaz') || q.includes('salah')) {
-        return "<b>Namaz ki Ahmiyat:</b><br>Namaz Islam ka doosra rukan aur deen ka sutoon hai. Din mein paanch waqt ki namaz (Fajr, Zuhr, Asr, Maghrib, Isha) har baligh musalman par farz hai. Ise pure khushoo, wudu aur waqt ki pabandi ke sath ada karna laazim hai.";
+        return "<b>Namaz ki Ahmiyat:</b><br>Namaz Islam ka doosra rukan aur deen ka sutoon hai. Din mein paanch waqt ki namaz (Fajr, Zuhr, Asr, Maghrib, Isha) har baligh musalman par farz hai. Ise wudu ke sath waqt par ada karna lazim hai.";
     } 
     else if (q.includes('wudu') || q.includes('wuzu')) {
         return "<b>Wudu ke 4 Faraiz:</b><br>1. Chehre ko poori tarah dhona.<br>2. Dono haathon ko kohniyon samet dhona.<br>3. Chauthai (1/4) sar ka masah karna.<br>4. Dono paanv ko taknon samet dhona.";
     }
-    else if (q.includes('roza') || q.includes('fasting') || q.includes('khana kha')) {
-        return "<b>Roze ke Ahkam:</b><br>Roza Islam ka choutha rukan hai. Subh-e-Sadiq se lekar suraj dhalne (sunset) tak khane, peene aur shohvani talluqat se ruka rehna roza kehlata hai. Halat-e-roze mein jaan boojh kar khana ya peena khane se roza toot jata hai.";
+    else if (q.includes('roza') || q.includes('fasting')) {
+        return "<b>Roze ke Ahkam:</b><br>Subh-e-Sadiq se lekar suraj dhalne tak khane, peene aur shohvani talluqat se ruka rehna roza kehlata hai. Halat-e-roze mein jaan boojh kar khane ya peene se roza toot jata hai.";
     } 
     else if (q.includes('quran') || q.includes('quraan')) {
-        return "<b>Quran-e-Majeed:</b><br>Quran Allah Ta'ala ki akhri aur mukammal kitaab hai jo Hazrat Muhammad (PBUH) par nazil hui. Isme poori insaniyat ke liye hidayat hai. Iski tilawat aur iske ahkam par amal karna hamari zimmedari hai.";
+        return "<b>Quran-e-Majeed:</b><br>Quran Allah Ta'ala ki akhri kitaab hai jo Hazrat Muhammad (PBUH) par nazil hui. Isme poori insaniyat ke liye hidayat hai.";
     }
     else if (q.includes('zakat')) {
-        return "<b>Zakat ka Nizaam:</b><br>Zakat Islam ka teesra rukan hai. Sahib-e-nisab shakhs par saal mein ek baar apne makhsoos maal par 2.5% Zakat nikalna farz hai taaki gareebon aur zarooratmandan ki madad ho sake.";
+        return "<b>Zakat:</b><br>Sahib-e-nisab musalman par saal mein ek baar apne makhsoos maal par 2.5% Zakat nikalna farz hai.";
     }
     else {
-        return `Walaikum Assalam! Aapne pucha hai: "<b>${question}</b>".<br>Ilmul Huda platform par is deeni mauzu aur course par tafseeli dars jald hi dastiyab hoga. Mazeed mukammal rahnumayi ke liye kisi mustanad alim ya Mufti se ruju karein.`;
+        return `Walaikum Assalam! Aapne pucha hai: "<b>${question}</b>".<br>Ilmul Huda platform par is deeni mauzu par tafseeli dars jald hi dastiyab hoga. Mazeed mukammal rahnumayi ke liye kisi mustanad alim ya Mufti se ruju karein.`;
     }
 }
 
@@ -60,7 +66,7 @@ app.get('/', (req, res) => {
             <div id="chat-container" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 bg-slate-50">
                 <div class="flex justify-start">
                     <div class="bg-emerald-100 text-emerald-900 p-4 rounded-2xl rounded-tl-none max-w-[85%] text-sm sm:text-base shadow-sm">
-                        Assalamu Alaikum! Main <b>Ilmul Huda</b> ka AI assistant hoon. Deeni masail ya sawal yahan pooch sakte hain.
+                        Assalamu Alaikum! Main <b>Ilmul Huda</b> ka AI assistant hoon. Deeni masail ya dua yahan pooch sakte hain.
                     </div>
                 </div>
             </div>
@@ -123,8 +129,7 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ error: 'Sawal likhna zaroori hai.' });
         }
 
-        // Yeh dynamic engine har alag sawal par uska mukabla karta hua behtareen aur alag jawab dega
-        const reply = getDynamicIslamicReply(prompt);
+        const reply = getAccurateIslamicReply(prompt);
         res.json({ reply });
 
     } catch (error) {
