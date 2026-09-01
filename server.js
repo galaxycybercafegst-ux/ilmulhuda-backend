@@ -5,44 +5,10 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Mukammal aur Sateek Islamic Knowledge Engine
-function getAccurateIslamicReply(question) {
-    const q = question.toLowerCase();
-    
-    if (q.includes('salam') || q.includes('hello') || q.includes('hey') || q.includes('hi')) {
-        return "Walaikum Assalam wa Rahmatullahi wa Barakatuh! Main Ilmul Huda ka AI Islamic Tutor hoon. Aap deeni masail, dua, tajweed ya kisi bhi mauzu par sawal pooch sakte hain.";
-    } 
-    else if (q.includes('khana khane ki dua') || q.includes('khane ki dua')) {
-        return "<b>Khana Khane ki Dua:</b><br>بِسْمِ اللَّهِ وَعَلَى بَرَكَةِ اللَّهِ<br><i>Tarjuma:</i> Allah ke naam ke sath aur Allah ki barkat par (hum khana shuru karte hain).<br><br><b>Agar khana shuru karte waqt dua bhool jayein toh yeh padhein:</b><br>بِسْمِ اللَّهِ أَوَّلَهُ وَآخِرَهُ";
-    }
-    else if (q.includes('dua') && (q.includes('khane') || q.includes('khana'))) {
-        return "<b>Khana Khane ki Dua:</b><br>بِسْمِ اللَّهِ وَعَلَى بَرَكَةِ اللَّهِ<br><i>Tarjuma:</i> Allah ke naam ke sath aur Allah ki barkat par.";
-    }
-    else if (q.includes('pani peene ki dua') || q.includes('paani ki dua')) {
-        return "Paani peene ki sunnat yeh hai ki bayen (left) hath se piyein, baith kar piyein aur teen saans mein piyein. Shuru mein <b>'Bismillah'</b> kahein aur aakhir mein <b>'Alhamdulillah'</b> kahein.";
-    }
-    else if (q.includes('ikhfa') || q.includes('tajweed')) {
-        return "<b>Tajweed - Ikhfa ke Rules:</b><br>Jab Noon Sakin (نْ) ya Tanween ke baad Ikhfa ke 15 huroof (ت ث ج د ذ ز س ش ص ض ط ظ ف ق ك) mein se koi harf aaye, toh Noon ki awaz ko naak mein chupakar (Ghunnah ke sath) 1 alif tak kheench kar padhte hain.";
-    } 
-    else if (q.includes('namaz') || q.includes('salah')) {
-        return "<b>Namaz ki Ahmiyat:</b><br>Namaz Islam ka doosra rukan aur deen ka sutoon hai. Din mein paanch waqt ki namaz (Fajr, Zuhr, Asr, Maghrib, Isha) har baligh musalman par farz hai. Ise wudu ke sath waqt par ada karna lazim hai.";
-    } 
-    else if (q.includes('wudu') || q.includes('wuzu')) {
-        return "<b>Wudu ke 4 Faraiz:</b><br>1. Chehre ko poori tarah dhona.<br>2. Dono haathon ko kohniyon samet dhona.<br>3. Chauthai (1/4) sar ka masah karna.<br>4. Dono paanv ko taknon samet dhona.";
-    }
-    else if (q.includes('roza') || q.includes('fasting')) {
-        return "<b>Roze ke Ahkam:</b><br>Subh-e-Sadiq se lekar suraj dhalne tak khane, peene aur shohvani talluqat se ruka rehna roza kehlata hai. Halat-e-roze mein jaan boojh kar khane ya peene se roza toot jata hai.";
-    } 
-    else if (q.includes('quran') || q.includes('quraan')) {
-        return "<b>Quran-e-Majeed:</b><br>Quran Allah Ta'ala ki akhri kitaab hai jo Hazrat Muhammad (PBUH) par nazil hui. Isme poori insaniyat ke liye hidayat hai.";
-    }
-    else if (q.includes('zakat')) {
-        return "<b>Zakat:</b><br>Sahib-e-nisab musalman par saal mein ek baar apne makhsoos maal par 2.5% Zakat nikalna farz hai.";
-    }
-    else {
-        return `Walaikum Assalam! Aapne pucha hai: "<b>${question}</b>".<br>Ilmul Huda platform par is deeni mauzu par tafseeli dars jald hi dastiyab hoga. Mazeed mukammal rahnumayi ke liye kisi mustanad alim ya Mufti se ruju karein.`;
-    }
-}
+// Aapki token key
+const TOKEN = "AQ.Ab8RN6Jls2oGXwuRyb1vn_UEYpvSoCUt7UafuzgvfbZ-UxR4HQ";
+
+const ISLAMIC_SYSTEM_PROMPT = "Aap ilmulhuda.com website ke official AI Islamic Tutor hain. Aapka kaam students ko Quran, Hadith, Fiqh, Seerah aur deegar Islamic courses ke mutabiq asan aur saaf zubaan mein taleem dena hai. Har sawal ka tafseeli aur sahi jawab Quran aur Sahih Hadith ki roshni mein adab ke sath dein.";
 
 app.get('/', (req, res) => {
     res.send(`<!DOCTYPE html>
@@ -66,12 +32,12 @@ app.get('/', (req, res) => {
             <div id="chat-container" class="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 bg-slate-50">
                 <div class="flex justify-start">
                     <div class="bg-emerald-100 text-emerald-900 p-4 rounded-2xl rounded-tl-none max-w-[85%] text-sm sm:text-base shadow-sm">
-                        Assalamu Alaikum! Main <b>Ilmul Huda</b> ka AI assistant hoon. Deeni masail ya dua yahan pooch sakte hain.
+                        Assalamu Alaikum! Main <b>Ilmul Huda</b> ka AI assistant hoon. Aap koi bhi deeni sawal pooch sakte hain.
                     </div>
                 </div>
             </div>
             <div id="loading" class="hidden px-6 py-2 text-xs sm:text-sm text-slate-500 italic bg-slate-50">
-                AI jawab tayyar kar raha hai...
+                Gemini AI jawab tayyar kar raha hai...
             </div>
             <div class="p-3 sm:p-4 bg-white border-t border-slate-200 flex items-center gap-3">
                 <input type="text" id="user-input" placeholder="Apna sawal yahan likhein..." class="flex-1 border border-slate-300 rounded-xl px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-emerald-600 bg-slate-50">
@@ -105,11 +71,11 @@ app.get('/', (req, res) => {
                 if (response.ok && data.reply) {
                     chatContainer.innerHTML += '<div class="flex justify-start"><div class="bg-emerald-100 text-emerald-900 p-4 rounded-2xl rounded-tl-none max-w-[85%] text-sm sm:text-base shadow-sm whitespace-pre-wrap">' + data.reply + '</div></div>';
                 } else {
-                    throw new Error('Server error');
+                    throw new Error(data.error || 'Server error');
                 }
             } catch (error) {
                 loadingIndicator.classList.add('hidden');
-                chatContainer.innerHTML += '<div class="flex justify-start"><div class="bg-red-100 text-red-700 p-4 rounded-2xl rounded-tr-none max-w-[85%] text-sm sm:text-base shadow-sm">Maaf kijiye, server se rabta nahi ho pa raha.</div></div>';
+                chatContainer.innerHTML += '<div class="flex justify-start"><div class="bg-red-100 text-red-700 p-4 rounded-2xl rounded-tr-none max-w-[85%] text-sm sm:text-base shadow-sm">Server se rabta nahi ho pa raha.</div></div>';
             }
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
@@ -129,12 +95,32 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ error: 'Sawal likhna zaroori hai.' });
         }
 
-        const reply = getAccurateIslamicReply(prompt);
-        res.json({ reply });
+        // Gemini API ko seedha token ke sath call karna
+        const apiResponse = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${TOKEN}`
+            },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: ISLAMIC_SYSTEM_PROMPT }] }
+            })
+        });
 
+        const data = await apiResponse.json();
+        
+        if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+            res.json({ reply: data.candidates[0].content.parts[0].text });
+        } else {
+            console.error('Gemini API Error Response:', data);
+            // Agar Google ka token reject ho jaye, toh yeh error batayega taaki humein asal wajah pata chale
+            const errorMsg = data.error?.message || "Token unauthorized hai. Google AI Studio se 'AIza' wali key banakar dalein.";
+            res.status(400).json({ error: errorMsg });
+        }
     } catch (error) {
         console.error('Error:', error);
-        res.json({ reply: "Walaikum Assalam! Aapke is sawal par ghaur kiya ja raha hai." });
+        res.status(500).json({ error: 'Server par takleek hui hai.' });
     }
 });
 
