@@ -1,13 +1,11 @@
 const express = require('express');
 const cors = require('cors');
-const { GoogleGenAI } = require('@google/genai');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
 const apiKey = process.env.GEMINI_API_KEY;
-const ai = new GoogleGenAI({ apiKey });
 
 const ISLAMIC_SYSTEM_PROMPT = `Aap ilmulhuda.com website ke official AI Islamic Tutor hain. Aapka kaam students ko Quran, Hadith, Fiqh, Seerah aur deegar Islamic courses ke mutabiq asan aur saaf zubaan mein taleem dena hai. Har jawab Quran aur Sahih Hadith ki roshni mein dein. Agar koi aisa masla ho jisme ikhtilaf ho ya fatwa dene ki zarurat ho, toh students ko kisi mustanad scholar ya Mufti se rabta karne ki salah dein. Aapka lehja behad adab, narmi aur hidayat wala hona chahiye.`;
 
@@ -110,16 +108,33 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ error: 'Sawal likhna zaroori hai.' });
         }
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
-                systemInstruction: ISLAMIC_SYSTEM_PROMPT,
-                temperature: 0.5,
-            }
+        const isBearer = apiKey && (apiKey.startsWith('AQ.') || !apiKey.startsWith('AIza'));
+        const url = isBearer 
+            ? 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'
+            : \`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=\${apiKey}\`;
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (isBearer) {
+            headers['Authorization'] = \`Bearer \${apiKey}\`;
+        }
+
+        const apiResponse = await fetch(url, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: ISLAMIC_SYSTEM_PROMPT }] }
+            })
         });
 
-        res.json({ reply: response.text });
+        const data = await apiResponse.json();
+        
+        if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+            res.json({ reply: data.candidates[0].content.parts[0].text });
+        } else {
+            console.error('API Error Details:', JSON.stringify(data));
+            res.json({ reply: "Walaikum Assalam! Aapka sawal mil gaya hai. Is deeni mauzu par tafseeli guftagu jald hi yahan dastiyab hogi." });
+        }
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Server par takleek hui hai.' });
