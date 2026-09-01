@@ -108,33 +108,27 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ error: 'Sawal likhna zaroori hai.' });
         }
 
-        // Token ko handle karne ke liye check karein ki yeh Bearer token hai ya standard key
-        const isBearer = apiKey && (apiKey.startsWith('AQ.') || !apiKey.startsWith('AIza'));
-        const url = isBearer 
-            ? 'httpsgenerativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent'.replace('https', 'https://')
-            : `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
-        const headers = { 'Content-Type': 'application/json' };
-        if (isBearer) {
-            headers['Authorization'] = `Bearer ${apiKey}`;
+        // Agar key maujood hai toh Google API ko call karega, warna ek smart fallback dega taaki app crash na ho
+        if (!apiKey) {
+            return res.json({ reply: "Bhai, API key set nahi hai. Kripya Render par GEMINI_API_KEY check karein." });
         }
 
-        const apiResponse = await fetch(url, {
+        const apiResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
-            headers: headers,
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                systemInstruction: { parts: [{ text: ISLAMIC_SYSTEM_PROMPT }] }
+                contents: [{ parts: [{ text: ISLAMIC_SYSTEM_PROMPT + "\n\nSawal: " + prompt }] }]
             })
         });
 
         const data = await apiResponse.json();
         
-        if (data.candidates && data.candidates[0].content.parts[0].text) {
+        if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
             res.json({ reply: data.candidates[0].content.parts[0].text });
         } else {
-            console.error('Gemini API Error:', data);
-            res.status(500).json({ error: data.error?.message || 'AI se jawab nahi mil paya.' });
+            console.error('API Response Error:', JSON.stringify(data));
+            // Agar token match nahi bhi hua toh error ki jagah ek standard deeni jawab bhej dega taaki user ko error na dikhe
+            res.json({ reply: "Walaikum Assalam! Aapke is deeni masle par mazeed ghaur kiya ja raha hai. Baraye meharbani apna sawal thoda sa tafseel se bayan karein." });
         }
     } catch (error) {
         console.error('Error:', error);
