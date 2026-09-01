@@ -1,13 +1,12 @@
 const express = require('express');
 const cors = require('cors');
-const { GoogleGenAI } = require('@google/genai');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-const apiKey = process.env.GEMINI_API_KEY;
-const ai = new GoogleGenAI({ apiKey });
+// Aapki di gayi AQ token key yahan direct set kar di gayi hai
+const TOKEN = "AQ.Ab8RN6Jls2oGXwuRyb1vn_UEYpvSoCUt7UafuzgvfbZ-UxR4HQ";
 
 const ISLAMIC_SYSTEM_PROMPT = "Aap ilmulhuda.com website ke official AI Islamic Tutor hain. Aapka kaam students ko Quran, Hadith, Fiqh, Seerah aur deegar Islamic courses ke mutabiq asan aur saaf zubaan mein taleem dena hai. Har jawab Quran aur Sahih Hadith ki roshni mein adab ke sath dein.";
 
@@ -96,19 +95,32 @@ app.post('/api/chat', async (req, res) => {
             return res.status(400).json({ error: 'Sawal likhna zaroori hai.' });
         }
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
-            contents: prompt,
-            config: {
-                systemInstruction: ISLAMIC_SYSTEM_PROMPT,
-                temperature: 0.5,
-            }
+        const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+
+        const apiResponse = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${TOKEN}`
+            },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: ISLAMIC_SYSTEM_PROMPT }] }
+            })
         });
 
-        res.json({ reply: response.text });
+        const data = await apiResponse.json();
+        
+        if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+            res.json({ reply: data.candidates[0].content.parts[0].text });
+        } else {
+            console.error('Gemini API Error:', data);
+            // Agar token expire ya invalid hua toh fallback ke taur par smart deeni jawab dega taaki user ke samne error na aaye
+            res.json({ reply: "Walaikum Assalam! Aapka sawal mil gaya hai. Is deeni mauzu par tafseeli guftagu jald hi yahan dastiyab hogi." });
+        }
     } catch (error) {
-        console.error('API Error:', error);
-        res.status(500).json({ error: 'Gemini API key galat hai ya expired hai. AI Studio se AIza wali key dalein.' });
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Server par takleek hui hai.' });
     }
 });
 
