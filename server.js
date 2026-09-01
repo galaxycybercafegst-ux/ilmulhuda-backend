@@ -6,8 +6,9 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const apiKey = process.env.GEMINI_API_KEY || 'AQ.Ab8RN6LaNxYBJd20uim1QADYeknWrDPzGY0jW2inj3eliCIhAg';
-const ai = new GoogleGenAI({ apiKey });
+const apiKey = process.env.GEMINI_API_KEY;
+// Naye format wali key ke liye SDK ko bina strict validation ke chalane ke liye:
+const ai = new GoogleGenAI({ apiKey, httpOptions: { apiVersion: 'v1beta' } });
 
 const ISLAMIC_SYSTEM_PROMPT = `Aap ilmulhuda.com website ke official AI Islamic Tutor hain. Aapka kaam students ko Quran, Hadith, Fiqh, Seerah aur deegar Islamic courses ke mutabiq asan aur saaf zubaan mein taleem dena hai. Har jawab Quran aur Sahih Hadith ki roshni mein dein. Agar koi aisa masla ho jisme ikhtilaf ho ya fatwa dene ki zarurat ho, toh students ko kisi mustanad scholar ya Mufti se rabta karne ki salah dein. Aapka lehja behad adab, narmi aur hidayat wala hona chahiye.`;
 
@@ -85,7 +86,7 @@ app.get('/', (req, res) => {
                 }
             } catch (error) {
                 loadingIndicator.classList.add('hidden');
-                chatContainer.innerHTML += \`<div class="flex justify-start"><div class="bg-red-100 text-red-700 p-4 rounded-2xl rounded-tl-none max-w-[85%] text-sm sm:text-base shadow-sm">Maaf kijiye, server se rabta nahi ho pa raha.</div></div>\`;
+                chatContainer.innerHTML += \`<div class="flex justify-start"><div class="bg-red-100 text-red-700 p-4 rounded-2xl rounded-tr-none max-w-[85%] text-sm sm:text-base shadow-sm">Maaf kijiye, server se rabta nahi ho pa raha.</div></div>\`;
             }
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
@@ -111,7 +112,7 @@ app.post('/api/chat', async (req, res) => {
         }
 
         const response = await ai.models.generateContent({
-            model: 'gemini-3.6-flash',
+            model: 'gemini-1.5-flash',
             contents: prompt,
             config: {
                 systemInstruction: ISLAMIC_SYSTEM_PROMPT,
