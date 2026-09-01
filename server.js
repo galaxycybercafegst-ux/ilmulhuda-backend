@@ -74,7 +74,7 @@ app.get('/', (req, res) => {
                 }
             } catch (error) {
                 loadingIndicator.classList.add('hidden');
-                chatContainer.innerHTML += '<div class="flex justify-start"><div class="bg-red-100 text-red-700 p-4 rounded-2xl rounded-tr-none max-w-[85%] text-sm sm:text-base shadow-sm">Maaf kijiye, server se rabta nahi ho pa raha.</div></div>';
+                chatContainer.innerHTML += '<div class="flex justify-start"><div class="bg-red-100 text-red-700 p-4 rounded-2xl rounded-tr-none max-w-[85%] text-sm sm:text-base shadow-sm">' + (error.message || 'Server se rabta nahi ho pa raha.') + '</div></div>';
             }
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
@@ -110,7 +110,9 @@ app.post('/api/chat', async (req, res) => {
         if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
             res.json({ reply: data.candidates[0].content.parts[0].text });
         } else {
-            res.json({ reply: "Walaikum Assalam! Aapka sawal mil gaya hai. Is deeni mauzu par tafseeli guftagu jald hi yahan dastiyab hogi." });
+            console.error('Gemini API Error:', data);
+            const errReason = data.error?.message || 'API Key invalid ya unauthorized hai.';
+            res.status(400).json({ error: errReason });
         }
     } catch (error) {
         console.error('Error:', error);
